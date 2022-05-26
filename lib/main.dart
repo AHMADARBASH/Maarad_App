@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
                 secondary: Colors.yellow[100],
                 error: Colors.red)),
         darkTheme: ThemeData.dark(),
-        home: const AuthScreen(),
+        home: AuthScreen(),
         routes: {
           SandwichScreen.routeName: (ctx) => const SandwichScreen(),
           CategoriesScreen.routeName: (ctx) => const CategoriesScreen(),
