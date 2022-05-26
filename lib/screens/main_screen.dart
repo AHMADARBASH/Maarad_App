@@ -3,7 +3,9 @@ import 'package:colorful_safe_area/colorful_safe_area.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/entypo_icons.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
+import 'package:maarad_app/providers/auth_provider.dart';
 import 'package:maarad_app/providers/cart_provider.dart';
+import 'package:maarad_app/screens/auth_screen.dart';
 import 'package:maarad_app/screens/cart_screen.dart';
 import 'package:maarad_app/screens/categories/drinks_screen.dart';
 import 'package:maarad_app/screens/categories/pastries_screen.dart';
@@ -21,8 +23,33 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
+  void logOut(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: const Text('Logout'),
+            content: const Text('you want to logout?'),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                        AuthScreen.routeaName, (route) => false);
+                  },
+                  child: const Text('yes')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: const Text('no'))
+            ],
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final _auth = Provider.of<Auth>(context, listen: false);
     return ColorfulSafeArea(
       color: Theme.of(context).colorScheme.primary,
       child: Scaffold(
@@ -79,7 +106,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 ),
                 const Divider(),
                 ListTile(
-                  onTap: () {},
+                  onTap: () {
+                    _auth.logout();
+                    logOut(context);
+                  },
                   leading: Icon(Entypo.logout,
                       color: Theme.of(context).colorScheme.primary),
                   title: const Text(
