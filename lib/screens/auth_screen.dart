@@ -90,6 +90,8 @@ class _AuthFormState extends State<AuthForm>
   @override
   void dispose() {
     _controller.dispose();
+    _usernameController.clear();
+    _passwordController.clear();
     super.dispose();
   }
 
@@ -163,24 +165,24 @@ class _AuthFormState extends State<AuthForm>
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.linear,
-            decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                      spreadRadius: 2,
-                      blurRadius: 6,
-                      color: Colors.grey.withOpacity(0.4),
-                      offset: const Offset(-1, 5)),
-                ],
-                //Color(0xffebd300)
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    const Color(0xffe8db73)
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: const BorderRadius.all(Radius.circular(15))),
+            // decoration: BoxDecoration(
+            //     boxShadow: [
+            //       BoxShadow(
+            //           spreadRadius: 2,
+            //           blurRadius: 6,
+            //           color: Colors.grey.withOpacity(0.4),
+            //           offset: const Offset(-1, 5)),
+            //     ],
+            //     //Color(0xffebd300)
+            //     gradient: LinearGradient(
+            //       colors: [
+            //         Theme.of(context).colorScheme.primary,
+            //         const Color(0xffe8db73)
+            //       ],
+            //       begin: Alignment.centerLeft,
+            //       end: Alignment.centerRight,
+            //     ),
+            //     borderRadius: const BorderRadius.all(Radius.circular(15))),
             width: double.infinity,
             height: _authmode == AuthMode.Login
                 ? MediaQuery.of(context).size.height * 0.22
@@ -349,17 +351,15 @@ class _AuthFormState extends State<AuthForm>
             GestureDetector(
               onTap: () {
                 try {
-                  print(_usernameController.text +
-                      ' : ' +
-                      _passwordController.text);
                   auth.login(
                       _usernameController.text, _passwordController.text);
-                  Navigator.of(context).pushNamed(CategoriesScreen.routeName);
+                  Navigator.of(context)
+                      .pushReplacementNamed(CategoriesScreen.routeName);
                 } catch (e) {
                   showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                            title: const Text('Please check your credentials'),
+                            title: Text(e.toString()),
                             actions: [
                               TextButton(
                                   onPressed: () {
