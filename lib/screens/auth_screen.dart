@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:maarad_app/models/http_Exceptions.dart';
 import 'package:maarad_app/screens/main_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -347,19 +349,28 @@ class _AuthFormState extends State<AuthForm>
           ),
           if (_authmode == AuthMode.Login)
             GestureDetector(
-              onTap: () {
+              onTap: () async {
                 try {
-                  print(_usernameController.text +
-                      ' : ' +
-                      _passwordController.text);
-                  auth.login(
+                  await auth.login(
                       _usernameController.text, _passwordController.text);
-                  Navigator.of(context).pushNamed(CategoriesScreen.routeName);
+                } on HTTPException catch (e) {
+                  showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                            title: Text(e.message),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.of(ctx).pop();
+                                  },
+                                  child: const Text('ok'))
+                            ],
+                          ));
                 } catch (e) {
                   showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                            title: const Text('Please check your credentials'),
+                            title: Text('Please check internet connection'),
                             actions: [
                               TextButton(
                                   onPressed: () {

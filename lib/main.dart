@@ -45,35 +45,37 @@ class MyApp extends StatelessWidget {
           create: (ctx) => Auth(),
         ),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        themeMode: ThemeMode.system,
-        theme: ThemeData(
-            // canvasColor: Colors.yellow[100],
-            textTheme: const TextTheme(
-                bodyText2: TextStyle(
-              color: Colors.white,
-            )),
-            appBarTheme: const AppBarTheme(
-              centerTitle: true,
-            ),
-            androidOverscrollIndicator: AndroidOverscrollIndicator.glow,
-            colorScheme: ColorScheme.fromSwatch().copyWith(
-                primary: Colors.yellow[700],
-                secondary: Colors.yellow[100],
-                error: Colors.red)),
-        darkTheme: ThemeData.dark(),
-        home: const AuthScreen(),
-        routes: {
-          AuthScreen.routeaName: (ctx) => const AuthScreen(),
-          SandwichScreen.routeName: (ctx) => const SandwichScreen(),
-          CategoriesScreen.routeName: (ctx) => const CategoriesScreen(),
-          DrinksScreen.routeName: (ctx) => const DrinksScreen(),
-          PastriesScreen.routeName: (ctx) => const PastriesScreen(),
-          ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
-          CartScreen.routeName: (ctx) => const CartScreen(),
-          OrdersScreen.routeName: (ctx) => const OrdersScreen(),
-        },
+      child: Consumer<Auth>(
+        builder: (ctx, auth, _) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          themeMode: ThemeMode.system,
+          theme: ThemeData(
+              // canvasColor: Colors.yellow[100],
+              textTheme: const TextTheme(
+                  bodyText2: TextStyle(
+                color: Colors.white,
+              )),
+              appBarTheme: const AppBarTheme(
+                centerTitle: true,
+              ),
+              androidOverscrollIndicator: AndroidOverscrollIndicator.glow,
+              colorScheme: ColorScheme.fromSwatch().copyWith(
+                  primary: Colors.yellow[700],
+                  secondary: Colors.yellow[100],
+                  error: Colors.red)),
+          darkTheme: ThemeData.dark(),
+          home: auth.isAuth ? CategoriesScreen() : AuthScreen(),
+          routes: {
+            AuthScreen.routeaName: (ctx) => const AuthScreen(),
+            SandwichScreen.routeName: (ctx) => const SandwichScreen(),
+            CategoriesScreen.routeName: (ctx) => const CategoriesScreen(),
+            DrinksScreen.routeName: (ctx) => const DrinksScreen(),
+            PastriesScreen.routeName: (ctx) => const PastriesScreen(),
+            ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
+            CartScreen.routeName: (ctx) => const CartScreen(),
+            OrdersScreen.routeName: (ctx) => const OrdersScreen(),
+          },
+        ),
       ),
     );
   }
