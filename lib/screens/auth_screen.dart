@@ -1,8 +1,7 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:maarad_app/models/http_Exceptions.dart';
-import 'package:maarad_app/screens/main_screen.dart';
+import 'package:maarad_app/reusable_Components/textformfield.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -17,37 +16,39 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Stack(children: [
-        Column(children: [
-          Stack(children: [
-            Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  height: MediaQuery.of(context).size.height,
-                  child: ImageFiltered(
-                    imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                    child: Image.asset(
-                      'images/food2.png',
-                      fit: BoxFit.cover,
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        child: Stack(alignment: Alignment.center, children: [
+          Column(children: [
+            Stack(children: [
+              Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height,
+                    child: ImageFiltered(
+                      imageFilter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
+                      child: Image.asset(
+                        'images/food2.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            Container(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height,
-              color: Colors.black12,
-            ),
+                ],
+              ),
+              Container(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height,
+                color: Colors.black12,
+              ),
+            ]),
           ]),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [AuthForm()],
+          ),
         ]),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [AuthForm()],
-        ),
-      ]),
+      ),
     );
   }
 }
@@ -62,12 +63,13 @@ class AuthForm extends StatefulWidget {
 class _AuthFormState extends State<AuthForm>
     with SingleTickerProviderStateMixin {
   //initials vars
+  // ignore: unused_field
   final _isloading = false;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
   var _authmode = AuthMode.Login;
-  var passInivisiilty = false;
+  var passInivisiilty = true;
 
   void passwordInvisiblity() {
     setState(() {
@@ -81,7 +83,7 @@ class _AuthFormState extends State<AuthForm>
   @override
   void initState() {
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 200));
+        vsync: this, duration: const Duration(milliseconds: 100));
 
     _fadeAnimation = Tween(begin: 0.0, end: 1.0)
         .animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
@@ -95,9 +97,34 @@ class _AuthFormState extends State<AuthForm>
     super.dispose();
   }
 
+  void showErrorDialog(String message) {
+    showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: Text(message),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: const Text('ok'))
+              ],
+            ));
+  }
+
+  Future<void> _submit() async {
+    try {
+      await Provider.of<Auth>(context, listen: false)
+          .login(_usernameController.text, _passwordController.text);
+    } on HTTPException catch (e) {
+      showErrorDialog(e.message);
+    } catch (e) {
+      showErrorDialog('an Error Occured!');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<Auth>(context, listen: false);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -165,24 +192,6 @@ class _AuthFormState extends State<AuthForm>
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.linear,
-            decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                      spreadRadius: 2,
-                      blurRadius: 6,
-                      color: Colors.grey.withOpacity(0.4),
-                      offset: const Offset(-1, 5)),
-                ],
-                //Color(0xffebd300)
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    const Color(0xffe8db73)
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: const BorderRadius.all(Radius.circular(15))),
             width: double.infinity,
             height: _authmode == AuthMode.Login
                 ? MediaQuery.of(context).size.height * 0.22
@@ -192,59 +201,58 @@ class _AuthFormState extends State<AuthForm>
               child: SingleChildScrollView(
                 child: Column(children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                        top: 15, bottom: 10, right: 10, left: 10),
-                    //username text field
-                    child: TextFormField(
-                      controller: _usernameController,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                          hintText: 'Username',
-                          errorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.red),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(50),
-                              )),
-                          prefixIcon: Padding(
-                            padding: EdgeInsets.only(left: 20.0),
-                            child: Icon(Icons.person_outline),
-                          ),
-                          border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.transparent),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(50),
-                              )),
-                          enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.transparent),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(50),
-                              )),
-                          focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.transparent),
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(50),
-                              )),
-                          fillColor: Colors.white,
-                          filled: true),
-                    ),
-                  ),
+                      padding: const EdgeInsets.only(
+                          top: 15, bottom: 10, right: 10, left: 10),
+                      //username text field
+                      child: defaultTextFormField(
+                        context: context,
+                        controller: _usernameController,
+                        hintText: 'username',
+                        inputAction: TextInputAction.next,
+                        prefixIcon: const Icon(Icons.person),
+                      )),
                   //password form field
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: Padding(
                       padding: const EdgeInsets.only(
                           top: 10, left: 10, right: 10, bottom: 5),
-                      child: TextFormField(
+                      child: defaultTextFormField(
+                        context: context,
+                        isVisiblePassword: passInivisiilty,
                         controller: _passwordController,
-                        obscureText: !passInivisiilty,
-                        decoration: InputDecoration(
-                            hintText: 'Password',
-                            prefixIcon: Padding(
-                              padding: const EdgeInsets.only(left: 20.0),
-                              child: !passInivisiilty
-                                  ? const Icon(Icons.lock_outline)
-                                  : const Icon(Icons.lock_open_outlined),
-                            ),
+                        hintText: 'Password',
+                        inputAction: _authmode == AuthMode.Login
+                            ? TextInputAction.done
+                            : TextInputAction.next,
+                        prefixIcon: !passInivisiilty
+                            ? const Icon(Icons.lock_open_outlined)
+                            : const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: !passInivisiilty
+                              ? const Icon(Icons.visibility_off_outlined)
+                              : const Icon(Icons.visibility_outlined),
+                          onPressed: () {
+                            passwordInvisiblity();
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_authmode == AuthMode.Signup)
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 10),
+                          child: defaultTextFormField(
+                            context: context,
+                            hintText: 'Confirm Password',
+                            inputAction: TextInputAction.done,
+                            isVisiblePassword: passInivisiilty,
+                            prefixIcon: !passInivisiilty
+                                ? const Icon(Icons.lock_open_outlined)
+                                : const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
                               icon: !passInivisiilty
                                   ? const Icon(Icons.visibility_off_outlined)
@@ -253,84 +261,15 @@ class _AuthFormState extends State<AuthForm>
                                 passwordInvisiblity();
                               },
                             ),
-                            border: const OutlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: Colors.transparent),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(50),
-                                )),
-                            enabledBorder: const OutlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: Colors.transparent),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(50),
-                                )),
-                            focusedBorder: const OutlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: Colors.transparent),
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(50),
-                                )),
-                            fillColor: Colors.white,
-                            filled: true),
-                      ),
-                    ),
-                  ),
-                  if (_authmode == AuthMode.Signup)
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 15, horizontal: 10),
-                        child: TextFormField(
-                          validator: _authmode == AuthMode.Signup
-                              ? (value) {
-                                  if (value != _passwordController.text) {
-                                    return 'Passwords do not match!';
+                            validator: _authmode == AuthMode.Signup
+                                ? (value) {
+                                    if (value != _passwordController.text) {
+                                      return 'Passwords do not match!';
+                                    }
+                                    return null;
                                   }
-                                  return null;
-                                }
-                              : null,
-                          enabled: _authmode == AuthMode.Signup,
-                          obscureText: !passInivisiilty,
-                          decoration: InputDecoration(
-                              hintText: 'Confirm Password',
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.only(left: 20.0),
-                                child: !passInivisiilty
-                                    ? const Icon(Icons.lock_outline)
-                                    : const Icon(Icons.lock_open_outlined),
-                              ),
-                              suffixIcon: IconButton(
-                                icon: !passInivisiilty
-                                    ? const Icon(Icons.visibility_off_outlined)
-                                    : const Icon(Icons.visibility_outlined),
-                                onPressed: () {
-                                  passwordInvisiblity();
-                                },
-                              ),
-                              border: const OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.transparent),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(50),
-                                  )),
-                              enabledBorder: const OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.transparent),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(50),
-                                  )),
-                              focusedBorder: const OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.transparent),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(50),
-                                  )),
-                              fillColor: Colors.white,
-                              filled: true),
-                        ),
-                      ),
+                                : null,
+                          )),
                     ),
                 ]),
               ),
@@ -349,38 +288,7 @@ class _AuthFormState extends State<AuthForm>
           ),
           if (_authmode == AuthMode.Login)
             GestureDetector(
-              onTap: () async {
-                try {
-                  await auth.login(
-                      _usernameController.text, _passwordController.text);
-                } on HTTPException catch (e) {
-                  showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                            title: Text(e.message),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(ctx).pop();
-                                  },
-                                  child: const Text('ok'))
-                            ],
-                          ));
-                } catch (e) {
-                  showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                            title: Text('Please check internet connection'),
-                            actions: [
-                              TextButton(
-                                  onPressed: () {
-                                    Navigator.of(ctx).pop();
-                                  },
-                                  child: const Text('ok'))
-                            ],
-                          ));
-                }
-              },
+              onTap: _submit,
               child: Container(
                 decoration: BoxDecoration(
                     boxShadow: [

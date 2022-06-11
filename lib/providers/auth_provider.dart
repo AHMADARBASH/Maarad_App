@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:maarad_app/models/http_Exceptions.dart';
@@ -21,15 +20,15 @@ class Auth with ChangeNotifier {
       final request = await http.post(url, body: userData);
       if (request.statusCode != 200) {
         final response = json.decode(request.body);
-        throw HTTPException(message: response['detail']);
+        if (response.toString().contains('detail')) {
+          throw HTTPException(message: 'Please Check your credentials');
+        }
       } else {
         final respone = json.decode(request.body);
-        print(json.decode(request.body));
 
         prefs.setString('Access', respone['access']);
         prefs.setString('Refresh', respone['refresh']);
         _token = prefs.getString('Access');
-        print('saved token: $_token');
         notifyListeners();
       }
     } catch (e) {
@@ -42,4 +41,6 @@ class Auth with ChangeNotifier {
     prefs.clear();
     notifyListeners();
   }
+
+  void autoLogout() async {}
 }
