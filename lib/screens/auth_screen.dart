@@ -95,6 +95,8 @@ class _AuthFormState extends State<AuthForm>
   @override
   void dispose() {
     _controller.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -317,6 +319,8 @@ class _AuthFormState extends State<AuthForm>
           GestureDetector(
             onTap: () {
               _submit();
+              Provider.of<Auth>(context, listen: false)
+                  .setUser(_usernameController.text);
             },
             child: Container(
               decoration: BoxDecoration(

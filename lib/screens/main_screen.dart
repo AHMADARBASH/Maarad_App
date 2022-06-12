@@ -5,7 +5,6 @@ import 'package:fluttericon/entypo_icons.dart';
 import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:maarad_app/providers/auth_provider.dart';
 import 'package:maarad_app/providers/cart_provider.dart';
-import 'package:maarad_app/screens/auth_screen.dart';
 import 'package:maarad_app/screens/cart_screen.dart';
 import 'package:maarad_app/screens/categories/drinks_screen.dart';
 import 'package:maarad_app/screens/categories/pastries_screen.dart';
@@ -24,17 +23,19 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   void logOut(BuildContext context) {
+    final _auth = Provider.of<Auth>(context, listen: false);
     showDialog(
         context: context,
         builder: (ctx) {
           return AlertDialog(
             title: const Text('Logout'),
-            content: const Text('you want to logout?'),
+            content: const Text('are you sure to logout?'),
             actions: [
               TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                        AuthScreen.routeaName, (route) => false);
+                    Provider.of<Auth>(context, listen: false).logout();
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushReplacementNamed('/');
                   },
                   child: const Text('yes')),
               TextButton(
@@ -50,6 +51,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     final _auth = Provider.of<Auth>(context, listen: false);
+    final _userName = _auth.userName;
     return ColorfulSafeArea(
       color: Theme.of(context).colorScheme.primary,
       child: Scaffold(
@@ -60,8 +62,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   child: Center(
                       child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      CircleAvatar(
+                    children: [
+                      const CircleAvatar(
                         backgroundColor: Colors.transparent,
                         radius: 40,
                         child: Icon(
@@ -71,7 +73,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                       ),
                       Text(
-                        'User name',
+                        _userName!,
                         style: TextStyle(fontSize: 25),
                       )
                     ],
@@ -107,7 +109,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 const Divider(),
                 ListTile(
                   onTap: () {
-                    _auth.logout();
                     logOut(context);
                   },
                   leading: Icon(Entypo.logout,

@@ -5,11 +5,23 @@ import 'package:maarad_app/models/http_Exceptions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Auth with ChangeNotifier {
+  String? username;
   String? _token;
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  String? getToken() {
+    return _token;
+  }
 
   bool get isAuth {
     return _token != null;
+  }
+
+  void setUser(String user) {
+    username = user;
+  }
+
+  String? get userName {
+    return username;
   }
 
   Future<void> login(String username, String password) async {
@@ -36,9 +48,11 @@ class Auth with ChangeNotifier {
     }
   }
 
-  void logout() async {
+  Future<void> logout() async {
     final SharedPreferences prefs = await _prefs;
-    prefs.clear();
+    await prefs.clear();
+    _token = null;
+    username = null;
     notifyListeners();
   }
 
