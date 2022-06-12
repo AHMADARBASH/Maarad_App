@@ -64,7 +64,7 @@ class _AuthFormState extends State<AuthForm>
     with SingleTickerProviderStateMixin {
   //initials vars
   // ignore: unused_field
-  final _isloading = false;
+  bool _isloading = false;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey();
@@ -82,6 +82,7 @@ class _AuthFormState extends State<AuthForm>
 
   @override
   void initState() {
+    _isloading = false;
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 100));
 
@@ -113,13 +114,40 @@ class _AuthFormState extends State<AuthForm>
   }
 
   Future<void> _submit() async {
-    try {
-      await Provider.of<Auth>(context, listen: false)
-          .login(_usernameController.text, _passwordController.text);
-    } on HTTPException catch (e) {
-      showErrorDialog(e.message);
-    } catch (e) {
-      showErrorDialog('an Error Occured!');
+    _formKey.currentState!.save();
+    setState(() {
+      _isloading = true;
+    });
+    if (_authmode == AuthMode.Login) {
+      try {
+        await Provider.of<Auth>(context, listen: false)
+            .login(_usernameController.text, _passwordController.text);
+      } on HTTPException catch (e) {
+        showErrorDialog(e.message);
+        setState(() {
+          _isloading = false;
+        });
+      } catch (e) {
+        showErrorDialog('an Error Occured!');
+        setState(() {
+          _isloading = false;
+        });
+      }
+    } else {
+      try {
+        await Provider.of<Auth>(context, listen: false)
+            .login(_usernameController.text, _passwordController.text);
+      } on HTTPException catch (e) {
+        showErrorDialog(e.message);
+        setState(() {
+          _isloading = false;
+        });
+      } catch (e) {
+        showErrorDialog('an Error Occured!');
+        setState(() {
+          _isloading = false;
+        });
+      }
     }
   }
 
@@ -286,42 +314,19 @@ class _AuthFormState extends State<AuthForm>
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.05,
           ),
-          if (_authmode == AuthMode.Login)
-            GestureDetector(
-              onTap: _submit,
-              child: Container(
-                decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                          spreadRadius: 2,
-                          blurRadius: 6,
-                          color: Colors.grey.withOpacity(0.4),
-                          offset: const Offset(-1, 5)),
-                    ],
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        const Color(0xffe8db73)
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: const BorderRadius.all(Radius.circular(550))),
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.08,
-                child: const Center(
-                  child: (Text(
-                    'Login',
-                    style: TextStyle(fontSize: 25),
-                  )),
-                ),
-              ),
-            ),
-          if (_authmode == AuthMode.Signup)
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                decoration: BoxDecoration(
+          GestureDetector(
+            onTap: () {
+              _submit();
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                        spreadRadius: 2,
+                        blurRadius: 6,
+                        color: Colors.grey.withOpacity(0.4),
+                        offset: const Offset(-1, 5)),
+                  ],
                   gradient: LinearGradient(
                     colors: [
                       Theme.of(context).colorScheme.primary,
@@ -330,25 +335,26 @@ class _AuthFormState extends State<AuthForm>
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
-                  borderRadius: const BorderRadius.all(Radius.circular(550)),
-                  boxShadow: [
-                    BoxShadow(
-                        spreadRadius: 2,
-                        blurRadius: 6,
-                        color: Colors.grey.withOpacity(0.4),
-                        offset: const Offset(-1, 5)),
-                  ],
-                ),
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.08,
-                child: const Center(
-                  child: (Text(
-                    'Sign up',
-                    style: TextStyle(fontSize: 25),
-                  )),
-                ),
+                  borderRadius: const BorderRadius.all(Radius.circular(550))),
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.08,
+              child: Center(
+                child: _isloading
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : _authmode == AuthMode.Login
+                        ? const Text(
+                            'Login',
+                            style: TextStyle(fontSize: 25),
+                          )
+                        : const Text(
+                            'Sign up',
+                            style: TextStyle(fontSize: 25),
+                          ),
               ),
             ),
+          )
         ],
       ),
     );
