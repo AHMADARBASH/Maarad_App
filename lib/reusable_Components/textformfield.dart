@@ -9,10 +9,13 @@ Widget defaultTextFormField(
         Widget? suffixIcon,
         required TextInputAction inputAction,
         bool? isVisiblePassword = false,
-        Function? validator}) =>
+        FormFieldValidator<String>? validator,
+        VoidCallback? onEditingCompleted}) =>
     TextFormField(
       controller: controller,
       textInputAction: inputAction,
+      validator: validator,
+      onEditingComplete: onEditingCompleted,
       obscureText: isVisiblePassword!,
       decoration: InputDecoration(
           hintText: hintText,

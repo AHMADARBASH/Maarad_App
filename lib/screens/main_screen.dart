@@ -23,12 +23,14 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   void logOut(BuildContext context) {
-    final _auth = Provider.of<Auth>(context, listen: false);
     showDialog(
         context: context,
         builder: (ctx) {
           return AlertDialog(
-            title: const Text('Logout'),
+            title: Text(
+              'Logout',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
             content: const Text('are you sure to logout?'),
             actions: [
               TextButton(

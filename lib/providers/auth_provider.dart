@@ -48,6 +48,25 @@ class Auth with ChangeNotifier {
     }
   }
 
+  Future<void> signup(String username, String password) async {
+    final url = Uri.parse('http://82.137.255.183:3939/auth/users/');
+    Map userData = {"username": username, "password": password};
+    try {
+      final request = await http.post(url, body: userData);
+      if (request.statusCode > 201) {
+        final response = json.decode(request.body);
+
+        if (response['username'] != null) {
+          throw HTTPException(message: 'Username already exist!');
+        } else if (response['password'] != null) {
+          throw HTTPException(message: 'password must be complex');
+        }
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> logout() async {
     final SharedPreferences prefs = await _prefs;
     await prefs.clear();
