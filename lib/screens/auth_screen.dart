@@ -17,6 +17,9 @@ class AuthScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      // floatingActionButton: FloatingActionButton(onPressed: () {
+      //   Provider.of<Auth>(context, listen: false).PrintToken();
+      // }),
       body: SingleChildScrollView(
         child: Stack(alignment: Alignment.center, children: [
           Column(children: [
@@ -63,7 +66,6 @@ class AuthForm extends StatefulWidget {
 class _AuthFormState extends State<AuthForm>
     with SingleTickerProviderStateMixin {
   //initials vars
-  // ignore: unused_field
   bool _isloading = false;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -100,11 +102,15 @@ class _AuthFormState extends State<AuthForm>
     super.dispose();
   }
 
-  void showErrorDialog(String message) {
+  void showErrorDialog({String? message, String? title}) {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: Text(message),
+              content: Text(message!),
+              title: Text(
+                title!,
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
               actions: [
                 TextButton(
                     onPressed: () {
@@ -116,6 +122,9 @@ class _AuthFormState extends State<AuthForm>
   }
 
   Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     _formKey.currentState!.save();
     setState(() {
       _isloading = true;
@@ -125,12 +134,12 @@ class _AuthFormState extends State<AuthForm>
         await Provider.of<Auth>(context, listen: false)
             .login(_usernameController.text, _passwordController.text);
       } on HTTPException catch (e) {
-        showErrorDialog(e.message);
+        showErrorDialog(message: e.message, title: 'Error');
         setState(() {
           _isloading = false;
         });
       } catch (e) {
-        showErrorDialog('an Error Occured!');
+        showErrorDialog(message: 'an Error Occured!', title: 'Error');
         setState(() {
           _isloading = false;
         });
@@ -138,14 +147,21 @@ class _AuthFormState extends State<AuthForm>
     } else {
       try {
         await Provider.of<Auth>(context, listen: false)
-            .login(_usernameController.text, _passwordController.text);
+            .signup(_usernameController.text, _passwordController.text);
+        showErrorDialog(message: 'Signed up Successfuly', title: 'Sign up');
+        setState(() {
+          _authmode = AuthMode.Login;
+          _isloading = false;
+          _usernameController.clear();
+          _passwordController.clear();
+        });
       } on HTTPException catch (e) {
-        showErrorDialog(e.message);
+        showErrorDialog(message: e.message, title: 'Error');
         setState(() {
           _isloading = false;
         });
       } catch (e) {
-        showErrorDialog('an Error Occured!');
+        showErrorDialog(message: 'an Error Occured!', title: 'Error');
         setState(() {
           _isloading = false;
         });
@@ -225,7 +241,7 @@ class _AuthFormState extends State<AuthForm>
             width: double.infinity,
             height: _authmode == AuthMode.Login
                 ? MediaQuery.of(context).size.height * 0.22
-                : MediaQuery.of(context).size.height * 0.33,
+                : MediaQuery.of(context).size.height * 0.35,
             child: Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -235,6 +251,12 @@ class _AuthFormState extends State<AuthForm>
                           top: 15, bottom: 10, right: 10, left: 10),
                       //username text field
                       child: defaultTextFormField(
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please Enter a username';
+                          }
+                          return null;
+                        },
                         context: context,
                         controller: _usernameController,
                         hintText: 'username',
@@ -248,6 +270,15 @@ class _AuthFormState extends State<AuthForm>
                       padding: const EdgeInsets.only(
                           top: 10, left: 10, right: 10, bottom: 5),
                       child: defaultTextFormField(
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter a password';
+                          }
+                          if (value.length < 8) {
+                            return 'Password must be Complex and 8 more characters';
+                          }
+                          return null;
+                        },
                         context: context,
                         isVisiblePassword: passInivisiilty,
                         controller: _passwordController,
@@ -276,30 +307,27 @@ class _AuthFormState extends State<AuthForm>
                           padding: const EdgeInsets.symmetric(
                               vertical: 15, horizontal: 10),
                           child: defaultTextFormField(
-                            context: context,
-                            hintText: 'Confirm Password',
-                            inputAction: TextInputAction.done,
-                            isVisiblePassword: passInivisiilty,
-                            prefixIcon: !passInivisiilty
-                                ? const Icon(Icons.lock_open_outlined)
-                                : const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              icon: !passInivisiilty
-                                  ? const Icon(Icons.visibility_off_outlined)
-                                  : const Icon(Icons.visibility_outlined),
-                              onPressed: () {
-                                passwordInvisiblity();
-                              },
-                            ),
-                            validator: _authmode == AuthMode.Signup
-                                ? (value) {
-                                    if (value != _passwordController.text) {
-                                      return 'Passwords do not match!';
-                                    }
-                                    return null;
-                                  }
-                                : null,
-                          )),
+                              context: context,
+                              hintText: 'Confirm Password',
+                              inputAction: TextInputAction.done,
+                              isVisiblePassword: passInivisiilty,
+                              prefixIcon: !passInivisiilty
+                                  ? const Icon(Icons.lock_open_outlined)
+                                  : const Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                icon: !passInivisiilty
+                                    ? const Icon(Icons.visibility_off_outlined)
+                                    : const Icon(Icons.visibility_outlined),
+                                onPressed: () {
+                                  passwordInvisiblity();
+                                },
+                              ),
+                              validator: (value) {
+                                if (value != _passwordController.text) {
+                                  return 'Passwords do not match!';
+                                }
+                                return null;
+                              })),
                     ),
                 ]),
               ),

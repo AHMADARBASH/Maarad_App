@@ -10,6 +10,7 @@ import 'package:maarad_app/screens/categories/drinks_screen.dart';
 import 'package:maarad_app/screens/categories/pastries_screen.dart';
 import 'package:maarad_app/screens/product_details_screen.dart';
 import 'package:maarad_app/screens/categories/sandwiches_screen.dart';
+import 'package:maarad_app/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:maarad_app/screens/orders_screen.dart';
 import 'package:flutter/services.dart';
@@ -64,7 +65,14 @@ class MyApp extends StatelessWidget {
                   secondary: Colors.yellow[100],
                   error: Colors.red)),
           darkTheme: ThemeData.dark(),
-          home: auth.isAuth ? const CategoriesScreen() : const AuthScreen(),
+          home: auth.isAuth
+              ? const CategoriesScreen()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (ctx, snapshot) =>
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? const SplashScreen()
+                          : const AuthScreen()),
           routes: {
             AuthScreen.routeaName: (ctx) => const AuthScreen(),
             SandwichScreen.routeName: (ctx) => const SandwichScreen(),
@@ -74,6 +82,7 @@ class MyApp extends StatelessWidget {
             ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
             CartScreen.routeName: (ctx) => const CartScreen(),
             OrdersScreen.routeName: (ctx) => const OrdersScreen(),
+            SplashScreen.routeName: (ctx) => const SplashScreen()
           },
         ),
       ),
@@ -81,10 +90,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return const CategoriesScreen();
-  }
-}
+// class MyHomePage extends StatelessWidget {
+//   const MyHomePage({Key? key}) : super(key: key);
+//   @override
+//   Widget build(BuildContext context) {
+//     return const CategoriesScreen();
+//   }
+// }

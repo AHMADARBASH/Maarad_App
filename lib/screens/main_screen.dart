@@ -23,12 +23,14 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   void logOut(BuildContext context) {
-    final _auth = Provider.of<Auth>(context, listen: false);
     showDialog(
         context: context,
         builder: (ctx) {
           return AlertDialog(
-            title: const Text('Logout'),
+            title: Text(
+              'Logout',
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
             content: const Text('are you sure to logout?'),
             actions: [
               TextButton(
@@ -50,11 +52,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final _auth = Provider.of<Auth>(context, listen: false);
-    final _userName = _auth.userName;
     return ColorfulSafeArea(
       color: Theme.of(context).colorScheme.primary,
       child: Scaffold(
+          // floatingActionButton: FloatingActionButton(
+          //   onPressed: () {
+          //     Provider.of<Auth>(context, listen: false).PrintToken();
+          //   },
+          // ),
           drawer: Drawer(
             child: ListView(
               children: [
@@ -72,10 +77,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           size: 50,
                         ),
                       ),
-                      Text(
-                        _userName!,
-                        style: TextStyle(fontSize: 25),
-                      )
+                      FutureBuilder(
+                          future: Provider.of<Auth>(context, listen: false)
+                              .userName,
+                          builder: ((ctx, snapshot) {
+                            return Text(snapshot.data.toString(),
+                                style: const TextStyle(fontSize: 25));
+                          }))
                     ],
                   )),
                   decoration: BoxDecoration(

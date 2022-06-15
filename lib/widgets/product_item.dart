@@ -60,6 +60,8 @@ class ProductItem extends StatelessWidget {
                       flex: 4,
                       child: Text(
                         productTitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
